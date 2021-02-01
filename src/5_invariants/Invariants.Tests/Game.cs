@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Invariants.Tests
 {
@@ -8,15 +7,19 @@ namespace Invariants.Tests
     {
         public static IEnumerable<IEvent> Handle(JoinGame command, GameState state)
         {
-            yield return new GameStarted { GameId = command.GameId, PlayerId = command.PlayerId };
-            yield return new RoundStarted { GameId = command.GameId, Round = 1 };
+            if (command.PlayerId == state.CreatorId) yield break;
+
+            yield return new GameStarted {GameId = command.GameId, PlayerId = command.PlayerId};
+            yield return new RoundStarted {GameId = command.GameId, Round = 1};
         }
 
         public static IEnumerable<IEvent> Handle(JoinGame command, IEvent[] events)
         {
-            yield return new GameStarted { GameId = command.GameId, PlayerId = command.PlayerId };
-            yield return new RoundStarted { GameId = command.GameId, Round = 1 };
-        }
+            var gameCreated = events.OfType<GameCreated>().Last();
+            if (gameCreated.PlayerId == command.PlayerId) yield break;
 
+            yield return new GameStarted {GameId = command.GameId, PlayerId = command.PlayerId};
+            yield return new RoundStarted {GameId = command.GameId, Round = 1};
+        }
     }
 }

@@ -1,11 +1,20 @@
 using System;
 using System.Linq;
+using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace TDD
 {
     public class AppTests
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public AppTests(ITestOutputHelper testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [InlineData(5, "B")]
         [InlineData(5, "A")]
@@ -17,12 +26,16 @@ namespace TDD
         public void IntegrationTest(int expectedHour, params string[] packages)
         {
             var typedPackages = packages
-                .Select(_ => new Package {Destination = Enum.Parse<DestinationType>(_)})
+                .Select((destCode, index) => new Package(index + 1, Location.Factory, Enum.Parse<Location>(destCode)))
                 .ToList();
             var app = new App(typedPackages);
 
             while (app.State.IsDone == false)
                 app.HandleHour();
+
+            app.History.ForEach(ev =>
+                testOutputHelper.WriteLine(JsonConvert.SerializeObject(ev,
+                    new Newtonsoft.Json.Converters.StringEnumConverter())));
 
             Assert.Equal(expectedHour, app.State.Hour);
         }

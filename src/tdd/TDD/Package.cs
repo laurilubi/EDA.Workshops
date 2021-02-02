@@ -2,12 +2,15 @@
 {
     public class Package
     {
-        public DestinationType Destination { get; set; }
-    }
+        public int Id { get; }
+        public Location Origin { get; }
+        public Location Destination { get; }
 
-    public enum DestinationType
-    {
-        A,
-        B,
+        public Package(int id, Location origin, Location destination)
+        {
+            Id = id;
+            Origin = origin;
+            Destination = destination;
+        }
     }
 }
